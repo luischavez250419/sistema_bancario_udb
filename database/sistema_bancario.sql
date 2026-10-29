@@ -23,6 +23,8 @@ CREATE TABLE IF NOT EXISTS cuentas_bancarias (
     saldo DECIMAL(12,2) NOT NULL DEFAULT 0.00,
     estado ENUM('Activa', 'Inactiva')
         NOT NULL DEFAULT 'Activa',
+    fechaHoraApertura DATETIME NULL,
+    cliente VARCHAR(100) NULL,
     CONSTRAINT fk_cuenta_cliente
         FOREIGN KEY (id_cliente)
         REFERENCES clientes(id_cliente)
