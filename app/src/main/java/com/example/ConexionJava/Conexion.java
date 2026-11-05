@@ -5,25 +5,17 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 
 public class Conexion {
- 
-    private static final String URL = "jdbc:mysql://localhost:3306/sistema_db?useSSL=false&serverTimezone=UTC";
-    private static final String USUARIO = "root";
-    private static final String PASSWORD = "tu_contraseña";
-
     
+    private static final String URL = "jdbc:mysql://localhost:3306/sistema_bancario_udb?useSSL=false&serverTimezone=UTC";
+    private static final String USUARIO = "root"; 
+    private static final String CONTRASENA = ""; 
+
     public static Connection obtenerConexion() {
         Connection conexion = null;
         try {
-            
-            Class.forName("com.mysql.cj.jdbc.Driver");
-            
-            conexion = DriverManager.getConnection(URL, USUARIO, PASSWORD);
-            System.out.println("¡Conexión exitosa a la base de datos!");
-            
-        } catch (ClassNotFoundException e) {
-            System.err.println("Error: No se encontró el Driver JDBC de MySQL. " + e.getMessage());
+            conexion = DriverManager.getConnection(URL, USUARIO, CONTRASENA);
         } catch (SQLException e) {
-            System.err.println("Error al conectar con la base de datos: " + e.getMessage());
+            System.err.println("Error al conectar a la base de datos: " + e.getMessage());
         }
         return conexion;
     }
