@@ -1,0 +1,18 @@
+# --- Gradle ---
+.gradle/
+/build/
+!gradle/wrapper/gradle-wrapper.jar
+
+# --- NetBeans ---
+/nbproject/private/
+/nb-configuration.xml
+build/
+nbproject/build-impl.xml
+nbproject/genfiles.properties
+nbproject/project.properties
+nbproject/project.xml
+
+# --- Sistema Operativo ---
+.DS_Store
+Thumbs.db
+*.log
