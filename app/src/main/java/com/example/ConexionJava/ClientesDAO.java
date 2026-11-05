@@ -1,20 +1,20 @@
 package com.example.ConexionJava;
 
 import java.sql.*;
-import java.util.ArrayList;
-import java.util.List;
 
 public class ClientesDAO {
 
-    // **CREATE** - Insertar un nuevo cliente usando PreparedStatement
-    public boolean insertar(String nombre, String correo, String telefono) {
-        String sql = "INSERT INTO clientes (nombre, correo, telefono) VALUES (?, ?, ?)";
-        try (Connection conn = Conexion.obtenerConexion();
+    public boolean insertarCliente(String dui, String nombreCompleto, String telefono, String correoElectronico, String direccion, String estado) {
+        String sql = "INSERT INTO Clientes (dui, nombre_completo, telefono, correo_electronico, direccion, estado) VALUES (?, ?, ?, ?, ?, ?)";
+       try (Connection conn = Conexion.obtenerConexion();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
             
-            pstmt.setString(1, nombre);
-            pstmt.setString(2, correo);
+            pstmt.setString(1, dui);
+            pstmt.setString(2, nombreCompleto);
             pstmt.setString(3, telefono);
+            pstmt.setString(4, correoElectronico);
+            pstmt.setString(5, direccion);
+            pstmt.setString(6, estado);
             
             int filasAfectadas = pstmt.executeUpdate();
             return filasAfectadas > 0;
@@ -24,37 +24,40 @@ public class ClientesDAO {
         }
     }
 
-    // **READ** - Listar todos los clientes registrados
     public void listarClientes() {
-        String sql = "SELECT id, nombre, correo, telefono FROM clientes";
+        String sql = "SELECT codigo_cliente, dui, nombre_completo, telefono, correo_electronico, direccion, estado FROM Clientes";
         try (Connection conn = Conexion.obtenerConexion();
              Statement stmt = conn.createStatement();
              ResultSet rs = stmt.executeQuery(sql)) {
             
             System.out.println("\n--- LISTA DE CLIENTES ---");
             while (rs.next()) {
-                int id = rs.getInt("id");
-                String nombre = rs.getString("nombre");
-                String correo = rs.getString("correo");
-                String telefono = rs.getString("telefono");
+                int codigo = rs.getInt("codigo_cliente");
+                String dui = rs.getString("dui");
+                String nombre = rs.getString("nombre_completo");
+                String tel = rs.getString("telefono");
+                String correo = rs.getString("correo_electronico");
+                String estado = rs.getString("estado");
                 
-                System.out.println("ID: " + id + " | Nombre: " + nombre + " | Correo: " + correo + " | Tel: " + telefono);
+                System.out.println("Código: " + codigo + " | DUI: " + dui + " | Nombre: " + nombre + " | Tel: " + tel + " | Correo: " + correo + " | Estado: " + estado);
             }
         } catch (SQLException e) {
             System.err.println("Error al listar clientes: " + e.getMessage());
         }
     }
 
-    // **UPDATE** - Actualizar los datos de un cliente mediante su ID
-    public boolean actualizar(int id, String nombre, String correo, String telefono) {
-        String sql = "UPDATE clientes SET nombre = ?, correo = ?, telefono = ? WHERE id = ?";
+    public boolean actualizarCliente(int codigoCliente, String dui, String nombreCompleto, String telefono, String correoElectronico, String direccion, String estado) {
+        String sql = "UPDATE Clientes SET dui = ?, nombre_completo = ?, telefono = ?, correo_electronico = ?, direccion = ?, estado = ? WHERE codigo_cliente = ?";
         try (Connection conn = Conexion.obtenerConexion();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
             
-            pstmt.setString(1, nombre);
-            pstmt.setString(2, correo);
+            pstmt.setString(1, dui);
+            pstmt.setString(2, nombreCompleto);
             pstmt.setString(3, telefono);
-            pstmt.setInt(4, id);
+            pstmt.setString(4, correoElectronico);
+            pstmt.setString(5, direccion);
+            pstmt.setString(6, estado);
+            pstmt.setInt(7, codigoCliente);
             
             int filasAfectadas = pstmt.executeUpdate();
             return filasAfectadas > 0;
@@ -64,13 +67,13 @@ public class ClientesDAO {
         }
     }
 
-    // **DELETE** - Eliminar un cliente por su ID
-    public boolean eliminar(int id) {
-        String sql = "DELETE FROM clientes WHERE id = ?";
+  
+    public boolean eliminarCliente(int codigoCliente) {
+        String sql = "DELETE FROM Clientes WHERE codigo_cliente = ?";
         try (Connection conn = Conexion.obtenerConexion();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
             
-            pstmt.setInt(1, id);
+            pstmt.setInt(1, codigoCliente);
             
             int filasAfectadas = pstmt.executeUpdate();
             return filasAfectadas > 0;
