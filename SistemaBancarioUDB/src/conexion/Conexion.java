@@ -3,26 +3,43 @@ package conexion;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
-
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.util.Properties;
 
 public class Conexion {
-    private static final String URL =
-        "jdbc:mysql://localhost:3306/sistema_bancario_udb"
-        + "?useSSL=false"
-        + "&serverTimezone=UTC-6"
-        + "&allowPublicKeyRetrieval=true";
 
-    private static final String USUARIO = "root";
+    private static final String ARCHIVO_CONFIG =
+            "config_database/database.properties";
 
-    // Sustituir por la contraseña real de MySQL.
-    private static final String PASSWORD = "250419";
+    private static final Properties propiedades = new Properties();
+
+    static {
+        try (FileInputStream archivo =
+                new FileInputStream(ARCHIVO_CONFIG)) {
+
+            propiedades.load(archivo);
+
+        } catch (IOException e) {
+            throw new ExceptionInInitializerError(
+                    "No se pudo cargar database.properties: "
+                    + e.getMessage()
+            );
+        }
+    }
 
     public static Connection obtenerConexion() throws SQLException {
 
-        return DriverManager.getConnection(
-            URL,
-            USUARIO,
-            PASSWORD
-        );
+        String url = propiedades.getProperty("db.url");
+        String usuario = propiedades.getProperty("db.user");
+        String password = propiedades.getProperty("db.password");
+
+        if (url == null || usuario == null || password == null) {
+            throw new SQLException(
+                    "Faltan propiedades en database.properties."
+            );
+        }
+
+        return DriverManager.getConnection(url, usuario, password);
     }
 }
