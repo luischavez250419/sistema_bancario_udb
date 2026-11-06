@@ -18,13 +18,13 @@ CREATE TABLE IF NOT EXISTS clientes (
 CREATE TABLE IF NOT EXISTS cuentas_bancarias (
     id_cuenta INT AUTO_INCREMENT PRIMARY KEY,
     id_cliente INT NOT NULL,
-    numero_cuenta VARCHAR(20) NOT NULL UNIQUE,
+    numero_cuenta VARCHAR(10) NOT NULL UNIQUE,
     tipo_cuenta ENUM('Ahorro', 'Corriente') NOT NULL,
     saldo DECIMAL(12,2) NOT NULL DEFAULT 0.00,
-    estado ENUM('Activa', 'Inactiva')
+    estado ENUM('Activa', 'Inactiva', 'Bloqueada')
         NOT NULL DEFAULT 'Activa',
-    fechaHoraApertura DATETIME NULL,
-    cliente VARCHAR(100) NULL,
+    fechaHoraApertura DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
     CONSTRAINT fk_cuenta_cliente
         FOREIGN KEY (id_cliente)
         REFERENCES clientes(id_cliente)

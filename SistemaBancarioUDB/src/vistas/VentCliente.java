@@ -1,23 +1,24 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/GUIForms/JFrame.java to edit this template
- */
 package vistas;
 
-/**
- *
- * @author cryst
- */
+import dao.ClientesDao;
+import sistema.Cliente;
+import java.sql.SQLException;
+import javax.swing.JOptionPane;
+import javax.swing.table.DefaultTableModel;
+
 public class VentCliente extends javax.swing.JFrame {
     
     private static final java.util.logging.Logger logger = java.util.logging.Logger.getLogger(VentCliente.class.getName());
 
+    private final ClientesDao clientesDao = new ClientesDao();
+    
     /**
      * Creates new form VentCliente
      */
     public VentCliente() {
         initComponents();
-        ((javax.swing.table.DefaultTableModel) tablaclientes.getModel()).setRowCount(0);
+        txtcode.setEditable(false);
+        cargarClientes();
         setLocationRelativeTo(null);
     }
 
@@ -59,7 +60,6 @@ public class VentCliente extends javax.swing.JFrame {
         jLabel1.setText("jLabel1");
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
-        setPreferredSize(new java.awt.Dimension(950, 550));
         setSize(new java.awt.Dimension(1331, 550));
 
         textitle.setFont(new java.awt.Font("Arial Rounded MT Bold", 0, 18)); // NOI18N
@@ -70,7 +70,7 @@ public class VentCliente extends javax.swing.JFrame {
 
         lblDui.setText("DUI:");
 
-        lblCodigo.setText("Código:");
+        lblCodigo.setText("Código de Cliente:");
 
         lbltelefono.setText("Teléfono:");
 
@@ -86,6 +86,7 @@ public class VentCliente extends javax.swing.JFrame {
             }
         });
 
+        txtcode.setEditable(false);
         txtcode.setPreferredSize(new java.awt.Dimension(250, 25));
 
         txtname.setPreferredSize(new java.awt.Dimension(250, 25));
@@ -110,7 +111,7 @@ public class VentCliente extends javax.swing.JFrame {
                 {null, null, null, null, null, null, null}
             },
             new String [] {
-                "Nombre", "DUI", "Código ", "Teléfono ", "Correo", "Dirección", "Estado"
+                "Nombre Completo", "DUI", "Código de Cliente", "Teléfono ", "Correo Electrónico", "Dirección", "Estado"
             }
         ));
         tablaclientes.setPreferredSize(new java.awt.Dimension(1330, 550));
@@ -258,102 +259,371 @@ public class VentCliente extends javax.swing.JFrame {
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
+    private void cargarClientes() {
+
+    DefaultTableModel modelo =
+            (DefaultTableModel) tablaclientes.getModel();
+
+    modelo.setRowCount(0);
+
+    try {
+
+        for (Cliente cliente : clientesDao.listarTodos()) {
+
+            modelo.addRow(new Object[]{
+                cliente.getNombreCompleto(),
+                cliente.getDui(),
+                cliente.getCodigoCliente(),
+                cliente.getTelefono(),
+                cliente.getEmail(),
+                cliente.getDireccion(),
+                cliente.getEstado()
+            });
+        }
+
+    } catch (SQLException e) {
+
+        JOptionPane.showMessageDialog(
+            this,
+            "No se pudieron cargar los clientes:\n" + e.getMessage(),
+            "Error de base de datos",
+            JOptionPane.ERROR_MESSAGE
+        );
+    }
+}
+    
+    
+private void limpiarFormulario() {
+
+    txtname.setText("");
+    txtdui.setText("");
+    txtcode.setText("");
+    txttlfno.setText("");
+    txtemail.setText("");
+    txtdireccion.setText("");
+
+    cmbestado.setSelectedIndex(0);
+
+    tablaclientes.clearSelection();
+
+    txtcode.setEditable(false);
+}
+
+    
     private void txtemailActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtemailActionPerformed
         // TODO add your handling code here:
     }//GEN-LAST:event_txtemailActionPerformed
 
     private void btnRegistrarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnRegistrarActionPerformed
-if (txtdui.getText().trim().isEmpty() || txtname.getText().trim().isEmpty()) {
-    javax.swing.JOptionPane.showMessageDialog(this, "El DUI y el Nombre son obligatorios.", "Error de validación", javax.swing.JOptionPane.ERROR_MESSAGE);
-    return;
-}
+        
+    String nombre = txtname.getText().trim();
+    String dui = txtdui.getText().trim();
+    String telefono = txttlfno.getText().trim();
+    String correo = txtemail.getText().trim();
+    String direccion = txtdireccion.getText().trim();
+    String estado = cmbestado.getSelectedItem().toString();
 
-javax.swing.table.DefaultTableModel modelo = (javax.swing.table.DefaultTableModel) tablaclientes.getModel();
-modelo.addRow(new Object[]{
-    txtname.getText(),
-    txtdui.getText(),
-    txtcode.getText(),
-    txttlfno.getText(),
-    txtemail.getText(),
-    txtdireccion.getText(), 
-    cmbestado.getSelectedItem().toString()
-});
+    // Validar campos obligatorios
+    if (nombre.isEmpty() || dui.isEmpty()
+            || telefono.isEmpty() || direccion.isEmpty()) {
 
-javax.swing.JOptionPane.showMessageDialog(this, "¡Cliente registrado con éxito!", "Confirmación", javax.swing.JOptionPane.INFORMATION_MESSAGE);
-txtcode.setText("");
-txtdui.setText("");
-txtname.setText("");
-txttlfno.setText("");
-txtemail.setText("");
-txtdireccion.setText(""); 
-cmbestado.setSelectedIndex(0);
-tablaclientes.clearSelection();
+        JOptionPane.showMessageDialog(
+            this,
+            "Completa todos los campos obligatorios.",
+            "Datos incompletos",
+            JOptionPane.WARNING_MESSAGE
+        );
+
+        return;
+    }
+
+    try {
+
+        // Crear el objeto Cliente
+        Cliente cliente = new Cliente(
+            null,
+            dui,
+            estado,
+            nombre,
+            telefono,
+            correo,
+            direccion
+        );
+
+        // Guardar en MySQL
+        int idGenerado = clientesDao.insertar(cliente);
+
+        if (idGenerado > 0) {
+
+            JOptionPane.showMessageDialog(
+                this,
+                "Cliente registrado correctamente.\nCódigo: " + idGenerado,
+                "Registro exitoso",
+                JOptionPane.INFORMATION_MESSAGE
+            );
+
+            // Actualizar la tabla
+            cargarClientes();
+
+            // Limpiar los campos
+            txtname.setText("");
+            txtdui.setText("");
+            txtcode.setText("");
+            txttlfno.setText("");
+            txtemail.setText("");
+            txtdireccion.setText("");
+            cmbestado.setSelectedIndex(0);
+
+        } else {
+
+            JOptionPane.showMessageDialog(
+                this,
+                "No fue posible registrar el cliente.",
+                "Error",
+                JOptionPane.ERROR_MESSAGE
+            );
+        }
+
+    } catch (SQLException e) {
+
+        JOptionPane.showMessageDialog(
+            this,
+            "Error al registrar el cliente:\n" + e.getMessage(),
+            "Error de base de datos",
+            JOptionPane.ERROR_MESSAGE
+        );
+    }
     }//GEN-LAST:event_btnRegistrarActionPerformed
 
     private void btnLimpiarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnLimpiarActionPerformed
-txtcode.setText("");
-txtdui.setText("");
-txtname.setText("");
-txttlfno.setText("");
-txtemail.setText("");
-txtdireccion.setText("");
-cmbestado.setSelectedIndex(0);
-tablaclientes.clearSelection();
+limpiarFormulario();
     }//GEN-LAST:event_btnLimpiarActionPerformed
 
     private void tablaclientesMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_tablaclientesMouseClicked
-      int fila = tablaclientes.getSelectedRow();
-      if (fila >= 0) {
-    javax.swing.table.DefaultTableModel modelo = (javax.swing.table.DefaultTableModel) tablaclientes.getModel();
-    txtname.setText(modelo.getValueAt(fila, 0).toString());
-    txtdui.setText(modelo.getValueAt(fila, 1).toString());
-    txtcode.setText(modelo.getValueAt(fila, 2).toString());
-    txttlfno.setText(modelo.getValueAt(fila, 3).toString());
-    txtemail.setText(modelo.getValueAt(fila, 4).toString());
-    txtdireccion.setText(modelo.getValueAt(fila, 5).toString()); 
-    cmbestado.setSelectedItem(modelo.getValueAt(fila, 6).toString());
-}
+      
+    int fila = tablaclientes.getSelectedRow();
+
+    if (fila >= 0) {
+
+        txtname.setText(
+            tablaclientes.getValueAt(fila, 0).toString()
+        );
+
+        txtdui.setText(
+            tablaclientes.getValueAt(fila, 1).toString()
+        );
+
+        txtcode.setText(
+            tablaclientes.getValueAt(fila, 2).toString()
+        );
+
+        txttlfno.setText(
+            tablaclientes.getValueAt(fila, 3).toString()
+        );
+
+        Object correo = tablaclientes.getValueAt(fila, 4);
+        txtemail.setText(correo == null ? "" : correo.toString());
+
+        Object direccion = tablaclientes.getValueAt(fila, 5);
+        txtdireccion.setText(
+            direccion == null ? "" : direccion.toString()
+        );
+
+        cmbestado.setSelectedItem(
+            tablaclientes.getValueAt(fila, 6).toString()
+        );
+    }
+
     }//GEN-LAST:event_tablaclientesMouseClicked
 
     private void btnActualizarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnActualizarActionPerformed
-       int fila = tablaclientes.getSelectedRow();
-       if (fila >= 0) {
-    javax.swing.table.DefaultTableModel modelo = (javax.swing.table.DefaultTableModel) tablaclientes.getModel();
-    modelo.setValueAt(txtname.getText(), fila, 0);
-    modelo.setValueAt(txtdui.getText(), fila, 1);
-    modelo.setValueAt(txtcode.getText(), fila, 2);
-    modelo.setValueAt(txttlfno.getText(), fila, 3);
-    modelo.setValueAt(txtemail.getText(), fila, 4);
-    modelo.setValueAt(txtdireccion.getText(), fila, 5); // ¡Actualizando con la caja de texto!
-    modelo.setValueAt(cmbestado.getSelectedItem().toString(), fila, 6);
+       
+    String codigo = txtcode.getText().trim();
 
-    javax.swing.JOptionPane.showMessageDialog(this, "Cliente actualizado correctamente.", "Éxito", javax.swing.JOptionPane.INFORMATION_MESSAGE);
-    txtcode.setText("");
-    txtdui.setText("");
-    txtname.setText("");
-    txttlfno.setText("");
-    txtemail.setText("");
-    txtdireccion.setText("");
-    cmbestado.setSelectedIndex(0);
-    tablaclientes.clearSelection();
-} else {
-    javax.swing.JOptionPane.showMessageDialog(this, "Selecciona un cliente de la tabla para actualizar.", "Advertencia", javax.swing.JOptionPane.WARNING_MESSAGE);
-}
+    String nombre = txtname.getText().trim();
+    String dui = txtdui.getText().trim();
+    String telefono = txttlfno.getText().trim();
+    String correo = txtemail.getText().trim();
+    String direccion = txtdireccion.getText().trim();
+    String estado = cmbestado.getSelectedItem().toString();
+
+    // Verificar que exista un cliente seleccionado
+    if (codigo.isEmpty()) {
+
+        JOptionPane.showMessageDialog(
+            this,
+            "Primero selecciona un cliente de la tabla.",
+            "Selección requerida",
+            JOptionPane.WARNING_MESSAGE
+        );
+
+        return;
+    }
+
+    // Validar campos obligatorios
+    if (nombre.isEmpty() || dui.isEmpty()
+            || telefono.isEmpty() || direccion.isEmpty()) {
+
+        JOptionPane.showMessageDialog(
+            this,
+            "Completa todos los campos obligatorios.",
+            "Datos incompletos",
+            JOptionPane.WARNING_MESSAGE
+        );
+
+        return;
+    }
+
+    try {
+
+        Cliente cliente = new Cliente(
+            codigo,
+            dui,
+            estado,
+            nombre,
+            telefono,
+            correo,
+            direccion
+        );
+
+        boolean actualizado = clientesDao.actualizar(cliente);
+
+        if (actualizado) {
+
+            JOptionPane.showMessageDialog(
+                this,
+                "Cliente actualizado correctamente.",
+                "Actualización exitosa",
+                JOptionPane.INFORMATION_MESSAGE
+            );
+
+            cargarClientes();
+
+            // Limpiar formulario
+            txtname.setText("");
+            txtdui.setText("");
+            txtcode.setText("");
+            txttlfno.setText("");
+            txtemail.setText("");
+            txtdireccion.setText("");
+            cmbestado.setSelectedIndex(0);
+
+        } else {
+
+            JOptionPane.showMessageDialog(
+                this,
+                "No se encontró el cliente que intentas actualizar.",
+                "Registro no encontrado",
+                JOptionPane.WARNING_MESSAGE
+            );
+        }
+
+    } catch (SQLException e) {
+
+        JOptionPane.showMessageDialog(
+            this,
+            "Error al actualizar el cliente:\n" + e.getMessage(),
+            "Error de base de datos",
+            JOptionPane.ERROR_MESSAGE
+        );
+
+    } catch (NumberFormatException e) {
+
+        JOptionPane.showMessageDialog(
+            this,
+            "El código del cliente no es válido.",
+            "Error",
+            JOptionPane.ERROR_MESSAGE
+        );
+    }
+
     }//GEN-LAST:event_btnActualizarActionPerformed
 
     private void btnEliminarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnEliminarActionPerformed
-       int fila = tablaclientes.getSelectedRow();
-if (fila >= 0) {
-    javax.swing.table.DefaultTableModel modelo = (javax.swing.table.DefaultTableModel) tablaclientes.getModel();
-    modelo.removeRow(fila);
+       
+    String codigo = txtcode.getText().trim();
 
-    /* AQUÍ SE CONECTA PARA ELIMINAR EN BASE DE DATOS */
+    // Verificar que exista un cliente seleccionado
+    if (codigo.isEmpty()) {
 
-    javax.swing.JOptionPane.showMessageDialog(this, "Cliente eliminado correctamente.", "Éxito", javax.swing.JOptionPane.INFORMATION_MESSAGE);
-    limpiarCampos();
-} else {
-    javax.swing.JOptionPane.showMessageDialog(this, "Selecciona un cliente de la tabla para eliminar.", "Advertencia", javax.swing.JOptionPane.WARNING_MESSAGE);
-}
+        JOptionPane.showMessageDialog(
+            this,
+            "Primero selecciona un cliente de la tabla.",
+            "Selección requerida",
+            JOptionPane.WARNING_MESSAGE
+        );
+
+        return;
+    }
+
+    // Solicitar confirmación
+    int confirmacion = JOptionPane.showConfirmDialog(
+        this,
+        "¿Estás seguro de que deseas eliminar este cliente?",
+        "Confirmar eliminación",
+        JOptionPane.YES_NO_OPTION,
+        JOptionPane.WARNING_MESSAGE
+    );
+
+    // Continuar solamente si el usuario confirma
+    if (confirmacion == JOptionPane.YES_OPTION) {
+
+        try {
+
+            boolean eliminado = clientesDao.eliminar(
+                Integer.parseInt(codigo)
+            );
+
+            if (eliminado) {
+
+                JOptionPane.showMessageDialog(
+                    this,
+                    "Cliente eliminado correctamente.",
+                    "Eliminación exitosa",
+                    JOptionPane.INFORMATION_MESSAGE
+                );
+
+                cargarClientes();
+
+                // Limpiar formulario
+                txtname.setText("");
+                txtdui.setText("");
+                txtcode.setText("");
+                txttlfno.setText("");
+                txtemail.setText("");
+                txtdireccion.setText("");
+                cmbestado.setSelectedIndex(0);
+
+            } else {
+
+                JOptionPane.showMessageDialog(
+                    this,
+                    "No se encontró el cliente que intentas eliminar.",
+                    "Registro no encontrado",
+                    JOptionPane.WARNING_MESSAGE
+                );
+            }
+
+        } catch (SQLException e) {
+
+            JOptionPane.showMessageDialog(
+                this,
+                "Error al eliminar el cliente:\n" + e.getMessage(),
+                "Error de base de datos",
+                JOptionPane.ERROR_MESSAGE
+            );
+
+        } catch (NumberFormatException e) {
+
+            JOptionPane.showMessageDialog(
+                this,
+                "El código del cliente no es válido.",
+                "Error",
+                JOptionPane.ERROR_MESSAGE
+            );
+        }
+    }
+
     }//GEN-LAST:event_btnEliminarActionPerformed
 
     private void btnRegresarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnRegresarActionPerformed

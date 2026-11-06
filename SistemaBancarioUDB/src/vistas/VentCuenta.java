@@ -1,16 +1,19 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/GUIForms/JFrame.java to edit this template
- */
 package vistas;
 
-/**
- *
- * @author cryst
- */
+import dao.CuentasDao;
+import sistema.Cliente;
+import sistema.Cuenta_bancaria;
+import java.sql.SQLException;
+import java.math.BigDecimal;
+import java.time.format.DateTimeFormatter;
+import javax.swing.JOptionPane;
+import javax.swing.table.DefaultTableModel;
+
 public class VentCuenta extends javax.swing.JFrame {
     
     private static final java.util.logging.Logger logger = java.util.logging.Logger.getLogger(VentCuenta.class.getName());
+    
+    private final CuentasDao cuentasDao = new CuentasDao();
 
     /**
      * Creates new form VentCuenta
@@ -18,9 +21,39 @@ public class VentCuenta extends javax.swing.JFrame {
     public VentCuenta() {
         initComponents();
         setLocationRelativeTo(null);
-    ((javax.swing.table.DefaultTableModel) tblcuentas.getModel()).setRowCount(0);
-        
+        cargarCuentas();    
     }
+    
+    private void cargarCuentas() {
+
+    DefaultTableModel modelo =
+        (DefaultTableModel) tblcuentas.getModel();
+
+    modelo.setRowCount(0);
+
+    try {
+        for (Cuenta_bancaria cuenta : cuentasDao.listarTodas()) {
+
+            modelo.addRow(new Object[]{
+                cuenta.getFechaHoraApertura(),
+                cuenta.getNumeroCuenta(),
+                cuenta.getCliente().getDui(),
+                cuenta.getCliente().getNombreCompleto(),
+                cuenta.getTipoCuenta(),
+                cuenta.getSaldo(),
+                cuenta.getEstado()
+            });
+        }
+
+    } catch (SQLException e) {
+        JOptionPane.showMessageDialog(
+            this,
+            "Error al cargar las cuentas:\n" + e.getMessage(),
+            "Error de base de datos",
+            JOptionPane.ERROR_MESSAGE
+        );
+    }
+}
 
     /**
      * This method is called from within the constructor to initialize the form.
@@ -38,8 +71,8 @@ public class VentCuenta extends javax.swing.JFrame {
         lblestado = new javax.swing.JLabel();
         jScrollPane1 = new javax.swing.JScrollPane();
         tblcuentas = new javax.swing.JTable();
-        txtnumerocuenta = new javax.swing.JTextField();
-        txtduicliente = new javax.swing.JTextField();
+        txtNumeroCuenta = new javax.swing.JTextField();
+        txtdui = new javax.swing.JTextField();
         txtsaldo = new javax.swing.JTextField();
         cmbestadocuentas = new javax.swing.JComboBox<>();
         jButton1 = new javax.swing.JButton();
@@ -49,6 +82,10 @@ public class VentCuenta extends javax.swing.JFrame {
         jLabel1 = new javax.swing.JLabel();
         cmbtipocuenta = new javax.swing.JComboBox<>();
         btnRegresar = new javax.swing.JButton();
+        jLabel2 = new javax.swing.JLabel();
+        txtNombreCliente = new javax.swing.JTextField();
+        jLabel3 = new javax.swing.JLabel();
+        txtFechaApertura = new javax.swing.JTextField();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -66,16 +103,29 @@ public class VentCuenta extends javax.swing.JFrame {
 
         tblcuentas.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
-                {null, null, null, null},
-                {null, null, null, null},
-                {null, null, null, null},
-                {null, null, null, null}
+                {null, null, null, null, null, null, null},
+                {null, null, null, null, null, null, null},
+                {null, null, null, null, null, null, null},
+                {null, null, null, null, null, null, null}
             },
             new String [] {
-                "Número de cuenta", "DUI del Cliente", "Saldo", "Estado"
+                "Fecha/hora de apertura", "Número de cuenta", "DUI del Cliente", "Nombre del cliente", "Tipo de cuenta", "Saldo", "Estado"
             }
         ));
+        tblcuentas.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                tblcuentasMouseClicked(evt);
+            }
+        });
         jScrollPane1.setViewportView(tblcuentas);
+
+        txtNumeroCuenta.setEditable(false);
+
+        txtdui.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyReleased(java.awt.event.KeyEvent evt) {
+                txtduiKeyReleased(evt);
+            }
+        });
 
         txtsaldo.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -83,7 +133,7 @@ public class VentCuenta extends javax.swing.JFrame {
             }
         });
 
-        cmbestadocuentas.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Activo", "Inactivo", "Bloqueado" }));
+        cmbestadocuentas.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Activa", "Inactiva", "Bloqueada" }));
         cmbestadocuentas.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 cmbestadocuentasActionPerformed(evt);
@@ -120,7 +170,7 @@ public class VentCuenta extends javax.swing.JFrame {
 
         jLabel1.setText("Tipo de cuenta:");
 
-        cmbtipocuenta.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Ahorros", "Corriente" }));
+        cmbtipocuenta.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Ahorro", "Corriente" }));
 
         btnRegresar.setText("Regresar al menú");
         btnRegresar.addActionListener(new java.awt.event.ActionListener() {
@@ -129,6 +179,19 @@ public class VentCuenta extends javax.swing.JFrame {
             }
         });
 
+        jLabel2.setText("Nombre del cliente:");
+
+        txtNombreCliente.setEditable(false);
+        txtNombreCliente.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                txtNombreClienteActionPerformed(evt);
+            }
+        });
+
+        jLabel3.setText("Fecha y hora de apertura:");
+
+        txtFechaApertura.setEditable(false);
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
@@ -136,43 +199,43 @@ public class VentCuenta extends javax.swing.JFrame {
             .addGroup(layout.createSequentialGroup()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
-                        .addGap(22, 22, 22)
-                        .addComponent(lblgestiontitle, javax.swing.GroupLayout.PREFERRED_SIZE, 365, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addGroup(layout.createSequentialGroup()
                         .addGap(40, 40, 40)
+                        .addComponent(jButton1)
+                        .addGap(18, 18, 18)
+                        .addComponent(jButton2)
+                        .addGap(18, 18, 18)
+                        .addComponent(jButton3)
+                        .addGap(18, 18, 18)
+                        .addComponent(jButton4))
+                    .addGroup(layout.createSequentialGroup()
+                        .addGap(22, 22, 22)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(lblgestiontitle, javax.swing.GroupLayout.PREFERRED_SIZE, 365, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addGroup(layout.createSequentialGroup()
-                                .addComponent(lblnumerocuenta, javax.swing.GroupLayout.PREFERRED_SIZE, 119, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(txtnumerocuenta, javax.swing.GroupLayout.PREFERRED_SIZE, 154, javax.swing.GroupLayout.PREFERRED_SIZE))
-                            .addGroup(layout.createSequentialGroup()
-                                .addComponent(lblduicliente)
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(jLabel1)
+                                    .addComponent(jLabel2)
+                                    .addComponent(jLabel3)
+                                    .addGroup(layout.createSequentialGroup()
+                                        .addComponent(lblsaldo)
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                        .addComponent(txtsaldo, javax.swing.GroupLayout.PREFERRED_SIZE, 130, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                    .addComponent(lblnumerocuenta, javax.swing.GroupLayout.PREFERRED_SIZE, 119, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(lblduicliente))
                                 .addGap(18, 18, 18)
-                                .addComponent(txtduicliente, javax.swing.GroupLayout.PREFERRED_SIZE, 161, javax.swing.GroupLayout.PREFERRED_SIZE))
-                            .addGroup(layout.createSequentialGroup()
-                                .addComponent(lblestado)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                .addComponent(cmbestadocuentas, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                            .addGroup(layout.createSequentialGroup()
-                                .addComponent(lblsaldo)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                .addComponent(txtsaldo, javax.swing.GroupLayout.PREFERRED_SIZE, 97, javax.swing.GroupLayout.PREFERRED_SIZE))
-                            .addGroup(layout.createSequentialGroup()
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                                    .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
-                                        .addComponent(jLabel1)
-                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                        .addComponent(cmbtipocuenta, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                                    .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
-                                        .addComponent(jButton1)
-                                        .addGap(18, 18, 18)
-                                        .addComponent(jButton2)))
-                                .addGap(18, 18, 18)
-                                .addComponent(jButton3)
-                                .addGap(18, 18, 18)
-                                .addComponent(jButton4))
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(txtNombreCliente, javax.swing.GroupLayout.PREFERRED_SIZE, 300, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(txtNumeroCuenta, javax.swing.GroupLayout.PREFERRED_SIZE, 101, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(cmbtipocuenta, javax.swing.GroupLayout.PREFERRED_SIZE, 95, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(txtdui, javax.swing.GroupLayout.PREFERRED_SIZE, 108, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                                        .addGroup(layout.createSequentialGroup()
+                                            .addComponent(lblestado)
+                                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                            .addComponent(cmbestadocuentas, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                        .addComponent(txtFechaApertura, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.PREFERRED_SIZE, 170, javax.swing.GroupLayout.PREFERRED_SIZE))))
                             .addComponent(btnRegresar, javax.swing.GroupLayout.PREFERRED_SIZE, 176, javax.swing.GroupLayout.PREFERRED_SIZE))))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 115, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 15, Short.MAX_VALUE)
                 .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 576, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(26, 26, 26))
         );
@@ -183,33 +246,39 @@ public class VentCuenta extends javax.swing.JFrame {
                     .addGroup(layout.createSequentialGroup()
                         .addGap(30, 30, 30)
                         .addComponent(lblgestiontitle)
-                        .addGap(23, 23, 23)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(lblnumerocuenta)
-                            .addComponent(txtnumerocuenta, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addGap(18, 18, 18)
+                            .addComponent(txtNumeroCuenta, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(lblnumerocuenta))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                             .addComponent(lblduicliente)
-                            .addComponent(txtduicliente, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addComponent(txtdui, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addGap(16, 16, 16)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addComponent(jLabel2)
+                            .addComponent(txtNombreCliente, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                         .addGap(18, 18, 18)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                             .addComponent(jLabel1)
                             .addComponent(cmbtipocuenta, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                         .addGap(18, 18, 18)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(txtFechaApertura, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(jLabel3))
+                        .addGap(23, 23, 23)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                             .addComponent(lblsaldo)
-                            .addComponent(txtsaldo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addGap(18, 18, 18)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(txtsaldo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(lblestado, javax.swing.GroupLayout.PREFERRED_SIZE, 22, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(cmbestadocuentas, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addGap(40, 40, 40)
+                        .addGap(30, 30, 30)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                             .addComponent(jButton1)
                             .addComponent(jButton2)
                             .addComponent(jButton3)
                             .addComponent(jButton4))
-                        .addGap(32, 32, 32)
+                        .addGap(37, 37, 37)
                         .addComponent(btnRegresar))
                     .addGroup(layout.createSequentialGroup()
                         .addGap(19, 19, 19)
@@ -230,57 +299,285 @@ public class VentCuenta extends javax.swing.JFrame {
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
                                        
-    String numCuenta = txtnumerocuenta.getText();
-    String dui = txtduicliente.getText();
-    String tipo = cmbtipocuenta.getSelectedItem().toString();
-    String saldo = txtsaldo.getText();
-    String estado = cmbestadocuentas.getSelectedItem().toString();
+    String dui = txtdui.getText().trim();
+    String saldoTexto = txtsaldo.getText().trim();
     
-    if(numCuenta.isEmpty() || dui.isEmpty() || saldo.isEmpty()) {
-        javax.swing.JOptionPane.showMessageDialog(this, "Por favor, complete todos los campos obligatorios.");
+    if (dui.isEmpty() || saldoTexto.isEmpty()){
+        JOptionPane.showMessageDialog(
+        this, "Por favor, complete el DUI del cliente y el saldo de la cuenta");
         return;
     }
-    
-    javax.swing.table.DefaultTableModel modelo = (javax.swing.table.DefaultTableModel) tblcuentas.getModel();
-    modelo.addRow(new Object[]{numCuenta, dui, saldo, estado});
-    
-    javax.swing.JOptionPane.showMessageDialog(this, "Cuenta registrada exitosamente.");
-    limpiarCampos();
         
+        try {
+
+        // 1. Buscar nuevamente al cliente en la base de datos
+        Cliente cliente = cuentasDao.buscarClientePorDui(dui);
+
+        if (cliente == null) {
+            JOptionPane.showMessageDialog(
+                this,
+                "No existe un cliente registrado con ese DUI."
+            );
+            return;
+        }
+
+        // 2. Verificar que el cliente esté activo
+        if (!"Activo".equals(cliente.getEstado())) {
+            JOptionPane.showMessageDialog(
+                this,
+                "No se puede abrir una cuenta para un cliente que no está activo."
+            );
+            return;
+        }
+
+        // 3. Validar el saldo
+        BigDecimal saldo = new BigDecimal(saldoTexto);
+
+        if (saldo.compareTo(BigDecimal.ZERO) < 0) {
+            JOptionPane.showMessageDialog(
+                this,
+                "El saldo no puede ser negativo."
+            );
+            return;
+        }
+
+        // 4. Obtener los valores de los combos
+        String tipo = cmbtipocuenta.getSelectedItem().toString();
+        String estado = cmbestadocuentas.getSelectedItem().toString();
+
+        // 5. Crear el objeto cuenta
+        Cuenta_bancaria cuenta = new Cuenta_bancaria(
+            null,
+            saldo,
+            tipo,
+            null,
+            estado,
+            cliente
+        );
+
+        // 6. Registrar en MySQL
+        String numeroGenerado = cuentasDao.insertar(cuenta);
+
+        // 7. Recuperar la fecha generada por MySQL
+        java.time.LocalDateTime fecha =
+            cuentasDao.obtenerFechaApertura(numeroGenerado);
+
+        // 8. Mostrar los datos generados
+        txtNumeroCuenta.setText(numeroGenerado);
+
+        if (fecha != null) {
+            DateTimeFormatter formato =
+                DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss");
+
+            txtFechaApertura.setText(fecha.format(formato));
+        }
+
+        // 9. Actualizar la tabla
+        cargarCuentas();
+
+        JOptionPane.showMessageDialog(
+            this,
+            "Cuenta registrada exitosamente.\nNúmero de cuenta: "
+            + numeroGenerado
+        );
+
+        } catch (NumberFormatException e) {
+
+            JOptionPane.showMessageDialog(
+                this,
+                "El saldo debe ser un número válido."
+            );
+
+        } catch (SQLException e) {
+
+            JOptionPane.showMessageDialog(
+                this,
+                "Error al registrar la cuenta:\n" + e.getMessage(),
+                "Error de base de datos",
+                JOptionPane.ERROR_MESSAGE
+            );
+        }
     }//GEN-LAST:event_jButton1ActionPerformed
 
     private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
                                              
+    // 1. Verificar que exista una cuenta seleccionada
     int filaSeleccionada = tblcuentas.getSelectedRow();
-    
-    if(filaSeleccionada >= 0) {
-        tblcuentas.setValueAt(txtnumerocuenta.getText(), filaSeleccionada, 0);
-        tblcuentas.setValueAt(txtduicliente.getText(), filaSeleccionada, 1);
-        tblcuentas.setValueAt(txtsaldo.getText(), filaSeleccionada, 2);
-        tblcuentas.setValueAt(cmbestadocuentas.getSelectedItem().toString(), filaSeleccionada, 3);
-        
-        javax.swing.JOptionPane.showMessageDialog(this, "Cuenta actualizada correctamente.");
-        limpiarCampos();
-    } else {
-        javax.swing.JOptionPane.showMessageDialog(this, "Seleccione una fila de la tabla para actualizar.");
+
+    if (filaSeleccionada < 0) {
+        JOptionPane.showMessageDialog(
+            this,
+            "Seleccione una cuenta de la tabla para actualizar."
+        );
+        return;
+    }
+
+    // 2. Obtener los datos del formulario
+    String numeroCuenta = txtNumeroCuenta.getText().trim();
+    String dui = txtdui.getText().trim();
+    String saldoTexto = txtsaldo.getText().trim();
+
+    if (dui.isEmpty() || saldoTexto.isEmpty()) {
+        JOptionPane.showMessageDialog(
+            this,
+            "Complete el DUI y el saldo."
+        );
+        return;
+    }
+
+    try {
+
+        // 3. Buscar el cliente asociado
+        Cliente cliente = cuentasDao.buscarClientePorDui(dui);
+
+        if (cliente == null) {
+            JOptionPane.showMessageDialog(
+                this,
+                "No existe un cliente registrado con ese DUI."
+            );
+            return;
+        }
+
+        // 4. Validar el saldo
+        BigDecimal saldo = new BigDecimal(saldoTexto);
+
+        if (saldo.compareTo(BigDecimal.ZERO) < 0) {
+            JOptionPane.showMessageDialog(
+                this,
+                "El saldo no puede ser negativo."
+            );
+            return;
+        }
+
+        // 5. Obtener tipo y estado
+        String tipo = cmbtipocuenta.getSelectedItem().toString();
+        String estado = cmbestadocuentas.getSelectedItem().toString();
+
+        // 6. Construir el objeto con los datos actualizados
+        Cuenta_bancaria cuenta = new Cuenta_bancaria(
+            numeroCuenta,
+            saldo,
+            tipo,
+            null,
+            estado,
+            cliente
+        );
+
+        // 7. Actualizar en MySQL
+        boolean actualizado = cuentasDao.actualizar(cuenta);
+
+        if (actualizado) {
+
+            // 8. Recargar la tabla
+            cargarCuentas();
+
+            JOptionPane.showMessageDialog(
+                this,
+                "Cuenta actualizada correctamente."
+            );
+
+            limpiarCampos();
+
+        } else {
+
+            JOptionPane.showMessageDialog(
+                this,
+                "No se encontró la cuenta que desea actualizar."
+            );
+        }
+
+    } catch (NumberFormatException e) {
+
+        JOptionPane.showMessageDialog(
+            this,
+            "El saldo debe ser un número válido."
+        );
+
+    } catch (SQLException e) {
+
+        JOptionPane.showMessageDialog(
+            this,
+            "Error al actualizar la cuenta:\n" + e.getMessage(),
+            "Error de base de datos",
+            JOptionPane.ERROR_MESSAGE
+        );
     }
 
     }//GEN-LAST:event_jButton2ActionPerformed
 
     private void jButton3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton3ActionPerformed
                                              
-    int filaSeleccionada = tblcuentas.getSelectedRow();
-    
-    if(filaSeleccionada >= 0) {
-        javax.swing.table.DefaultTableModel modelo = (javax.swing.table.DefaultTableModel) tblcuentas.getModel();
-        modelo.removeRow(filaSeleccionada);
-        
-        javax.swing.JOptionPane.showMessageDialog(this, "Cuenta eliminada correctamente.");
-        limpiarCampos();
-    } else {
-        javax.swing.JOptionPane.showMessageDialog(this, "Seleccione una fila de la tabla para eliminar.");
-    }
+        // 1. Verificar que exista una cuenta seleccionada
+        int filaSeleccionada = tblcuentas.getSelectedRow();
 
+        if (filaSeleccionada < 0) {
+            JOptionPane.showMessageDialog(
+                this,
+                "Seleccione una cuenta de la tabla para eliminar."
+            );
+            return;
+        }
+
+        // 2. Obtener el número de cuenta
+        String numeroCuenta = txtNumeroCuenta.getText().trim();
+
+        if (numeroCuenta.isEmpty()) {
+            JOptionPane.showMessageDialog(
+                this,
+                "No se pudo identificar la cuenta seleccionada."
+            );
+            return;
+        }
+
+        // 3. Solicitar confirmación
+        int confirmacion = JOptionPane.showConfirmDialog(
+            this,
+            "¿Está seguro de eliminar la cuenta " + numeroCuenta + "?",
+            "Confirmar eliminación",
+            JOptionPane.YES_NO_OPTION,
+            JOptionPane.WARNING_MESSAGE
+        );
+
+        if (confirmacion != JOptionPane.YES_OPTION) {
+            return;
+        }
+
+        try {
+
+            // 4. Eliminar la cuenta de MySQL
+            boolean eliminado = cuentasDao.eliminar(numeroCuenta);
+
+            if (eliminado) {
+
+                // 5. Recargar la tabla
+                cargarCuentas();
+
+                // 6. Limpiar el formulario
+                limpiarCampos();
+
+                JOptionPane.showMessageDialog(
+                    this,
+                    "Cuenta eliminada correctamente."
+                );
+
+            } else {
+
+                JOptionPane.showMessageDialog(
+                    this,
+                    "No se encontró la cuenta que desea eliminar."
+                );
+            }
+
+        } catch (SQLException e) {
+
+            JOptionPane.showMessageDialog(
+                this,
+                "Error al eliminar la cuenta:\n" + e.getMessage(),
+                "Error de base de datos",
+                JOptionPane.ERROR_MESSAGE
+            );
+        }
+        
     }//GEN-LAST:event_jButton3ActionPerformed
 
     private void jButton4ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton4ActionPerformed
@@ -289,12 +586,23 @@ public class VentCuenta extends javax.swing.JFrame {
 }
 
 private void limpiarCampos() {
-    txtnumerocuenta.setText("");
-    txtduicliente.setText("");
+
+    // Limpiar campos de texto
+    txtNumeroCuenta.setText("");
+    txtdui.setText("");
+    txtNombreCliente.setText("");
+    txtFechaApertura.setText("");
     txtsaldo.setText("");
-    if(cmbtipocuenta.getItemCount() > 0) cmbtipocuenta.setSelectedIndex(0);
-    if(cmbestadocuentas.getItemCount() > 0) cmbestadocuentas.setSelectedIndex(0);
-    txtnumerocuenta.requestFocus();
+
+    // Restablecer los valores de los combos
+    cmbtipocuenta.setSelectedIndex(0);
+    cmbestadocuentas.setSelectedIndex(0);
+
+    // Quitar cualquier selección de la tabla
+    tblcuentas.clearSelection();
+
+    // Colocar el cursor en el campo DUI
+    txtdui.requestFocusInWindow();
 
     }//GEN-LAST:event_jButton4ActionPerformed
 
@@ -304,9 +612,100 @@ private void limpiarCampos() {
 
     }//GEN-LAST:event_btnRegresarActionPerformed
 
-    /**
-     * @param args the command line arguments
-     */
+    private void txtNombreClienteActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtNombreClienteActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_txtNombreClienteActionPerformed
+
+    private void txtduiKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_txtduiKeyReleased
+        
+    String dui = txtdui.getText().trim();
+
+    // Esperar a que se introduzca el DUI completo
+    if (dui.length() != 10) {
+        txtNombreCliente.setText("");
+        return;
+    }
+
+    try {
+
+        Cliente cliente = cuentasDao.buscarClientePorDui(dui);
+
+        if (cliente != null) {
+
+            txtNombreCliente.setText(
+                cliente.getNombreCompleto()
+            );
+
+        } else {
+
+            txtNombreCliente.setText("");
+
+        }
+
+    } catch (SQLException e) {
+
+        JOptionPane.showMessageDialog(
+            this,
+            "Error al buscar el cliente:\n" + e.getMessage(),
+            "Error de base de datos",
+            JOptionPane.ERROR_MESSAGE
+        );
+    }
+    }//GEN-LAST:event_txtduiKeyReleased
+
+    private void tblcuentasMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_tblcuentasMouseClicked
+
+        int filaSeleccionada = tblcuentas.getSelectedRow();
+
+        if (filaSeleccionada >= 0) {
+
+            // Número de cuenta
+            txtNumeroCuenta.setText(
+                tblcuentas.getValueAt(filaSeleccionada, 1).toString()
+            );
+
+            // DUI del cliente
+            String dui = tblcuentas.getValueAt(filaSeleccionada, 2).toString();
+            txtdui.setText(dui);
+
+            // Nombre del cliente
+            txtNombreCliente.setText(
+                tblcuentas.getValueAt(filaSeleccionada, 3).toString()
+            );
+
+            // Tipo de cuenta
+            cmbtipocuenta.setSelectedItem(
+                tblcuentas.getValueAt(filaSeleccionada, 4).toString()
+            );
+
+            // Saldo
+            txtsaldo.setText(
+                tblcuentas.getValueAt(filaSeleccionada, 5).toString()
+            );
+
+            // Estado
+            cmbestadocuentas.setSelectedItem(
+                tblcuentas.getValueAt(filaSeleccionada, 6).toString()
+            );
+
+            // Fecha y hora de apertura
+            Object fecha = tblcuentas.getValueAt(filaSeleccionada, 0);
+
+            if (fecha instanceof java.time.LocalDateTime) {
+
+                DateTimeFormatter formato =
+                    DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss");
+
+                txtFechaApertura.setText(
+                    ((java.time.LocalDateTime) fecha).format(formato)
+                );
+
+            } else {
+                txtFechaApertura.setText(fecha.toString());
+            }
+        }
+    }//GEN-LAST:event_tblcuentasMouseClicked
+   
     public static void main(String args[]) {
         /* Set the Nimbus look and feel */
         //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
@@ -326,9 +725,8 @@ private void limpiarCampos() {
         //</editor-fold>
 
         /* Create and display the form */
-        java.awt.EventQueue.invokeLater(() -> new VentCuenta().setVisible(true));
+     java.awt.EventQueue.invokeLater(() -> new VentCuenta().setVisible(true));
     }
-
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnRegresar;
     private javax.swing.JComboBox<String> cmbestadocuentas;
@@ -338,6 +736,8 @@ private void limpiarCampos() {
     private javax.swing.JButton jButton3;
     private javax.swing.JButton jButton4;
     private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel jLabel2;
+    private javax.swing.JLabel jLabel3;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JLabel lblduicliente;
     private javax.swing.JLabel lblestado;
@@ -345,8 +745,10 @@ private void limpiarCampos() {
     private javax.swing.JLabel lblnumerocuenta;
     private javax.swing.JLabel lblsaldo;
     private javax.swing.JTable tblcuentas;
-    private javax.swing.JTextField txtduicliente;
-    private javax.swing.JTextField txtnumerocuenta;
+    private javax.swing.JTextField txtFechaApertura;
+    private javax.swing.JTextField txtNombreCliente;
+    private javax.swing.JTextField txtNumeroCuenta;
+    private javax.swing.JTextField txtdui;
     private javax.swing.JTextField txtsaldo;
     // End of variables declaration//GEN-END:variables
 
