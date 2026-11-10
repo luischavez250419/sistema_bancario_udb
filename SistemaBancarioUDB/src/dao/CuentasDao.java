@@ -211,32 +211,24 @@ public class CuentasDao {
     // ACTUALIZAR CUENTA
     // =========================================
 
-    public boolean actualizar(Cuenta_bancaria cuenta)
-            throws SQLException {
+public boolean actualizar(Cuenta_bancaria cuenta)
+        throws SQLException {
 
-        String sql = "UPDATE cuentas_bancarias SET "
-                   + "id_cliente = ?, tipo_cuenta = ?, "
-                   + "saldo = ?, estado = ? "
-                   + "WHERE numero_cuenta = ?";
+    String sql = "UPDATE cuentas_bancarias SET "
+               + "tipo_cuenta = ?, saldo = ?, estado = ? "
+               + "WHERE numero_cuenta = ?";
 
-        try (Connection conn = Conexion.obtenerConexion();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+    try (Connection conn = Conexion.obtenerConexion();
+         PreparedStatement ps = conn.prepareStatement(sql)) {
 
-            ps.setInt(
-                1,
-                Integer.parseInt(
-                    cuenta.getCliente().getCodigoCliente()
-                )
-            );
+        ps.setString(1, cuenta.getTipoCuenta());
+        ps.setBigDecimal(2, cuenta.getSaldo());
+        ps.setString(3, cuenta.getEstado());
+        ps.setString(4, cuenta.getNumeroCuenta());
 
-            ps.setString(2, cuenta.getTipoCuenta());
-            ps.setBigDecimal(3, cuenta.getSaldo());
-            ps.setString(4, cuenta.getEstado());
-            ps.setString(5, cuenta.getNumeroCuenta());
-
-            return ps.executeUpdate() > 0;
-        }
+        return ps.executeUpdate() > 0;
     }
+}
 
     // =========================================
     // ELIMINAR CUENTA
