@@ -1,3 +1,0 @@
-db.url=jdbc:mysql://localhost:3306/sistema_bancario_udb?useSSL=false&serverTimezone=UTC-6&allowPublicKeyRetrieval=true
-db.user=ESCRIBE_TU_USUARIO
-db.password=ESCRIBE_TU_CONTRASEÑA
