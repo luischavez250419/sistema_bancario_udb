@@ -8,6 +8,22 @@ import javax.swing.table.DefaultTableModel;
 
 public class VentCliente extends javax.swing.JFrame {
     
+    // Validar formato del DUI salvadoreño
+private boolean validarDUI(String dui) {
+    return dui.matches("^\\d{8}-\\d$");
+}
+
+// Validar formato del correo electrónico
+private boolean validarCorreo(String correo) {
+    if (correo.isEmpty()) {
+        return true; // El correo es opcional
+    }
+
+    return correo.matches(
+        "^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$"
+    );
+}
+    
     private static final java.util.logging.Logger logger = java.util.logging.Logger.getLogger(VentCliente.class.getName());
 
     private final ClientesDao clientesDao = new ClientesDao();
@@ -336,7 +352,27 @@ private void limpiarFormulario() {
 
         return;
     }
+// Validar formato del DUI
+if (!validarDUI(dui)) {
+    JOptionPane.showMessageDialog(
+        this,
+        "El DUI debe tener el formato 12345678-9.",
+        "DUI inválido",
+        JOptionPane.WARNING_MESSAGE
+    );
+    return;
+}
 
+// Validar formato del correo
+if (!validarCorreo(correo)) {
+    JOptionPane.showMessageDialog(
+        this,
+        "Ingresa un correo electrónico válido.",
+        "Correo inválido",
+        JOptionPane.WARNING_MESSAGE
+    );
+    return;
+}
     try {
 
         // Crear el objeto Cliente
@@ -473,6 +509,28 @@ limpiarFormulario();
 
         return;
     }
+    
+// Validar formato del DUI
+if (!validarDUI(dui)) {
+    JOptionPane.showMessageDialog(
+        this,
+        "El DUI debe tener el formato 12345678-9.",
+        "DUI inválido",
+        JOptionPane.WARNING_MESSAGE
+    );
+    return;
+}
+
+// Validar formato del correo
+if (!validarCorreo(correo)) {
+    JOptionPane.showMessageDialog(
+        this,
+        "Ingresa un correo electrónico válido.",
+        "Correo inválido",
+        JOptionPane.WARNING_MESSAGE
+    );
+    return;
+}
 
     try {
 
@@ -606,24 +664,37 @@ limpiarFormulario();
 
         } catch (SQLException e) {
 
-            JOptionPane.showMessageDialog(
-                this,
-                "Error al eliminar el cliente:\n" + e.getMessage(),
-                "Error de base de datos",
-                JOptionPane.ERROR_MESSAGE
-            );
+            if (e.getErrorCode() == 1451) {
 
-        } catch (NumberFormatException e) {
+                JOptionPane.showMessageDialog(
+                    this,
+                    "No se puede eliminar este cliente porque tiene "
+                    + "una o más cuentas bancarias vinculadas.\n\n"
+                    + "Primero debes eliminar sus cuentas bancarias.",
+                    "Eliminación no permitida",
+                    JOptionPane.WARNING_MESSAGE
+                );
+
+            } else {
+
+                JOptionPane.showMessageDialog(
+                    this,
+                    "Ocurrió un error al eliminar el cliente.\n"
+                    + "Detalle: " + e.getMessage(),
+                    "Error de base de datos",
+                    JOptionPane.ERROR_MESSAGE
+                );
+            }
+        }catch (NumberFormatException e) {
 
             JOptionPane.showMessageDialog(
                 this,
                 "El código del cliente no es válido.",
                 "Error",
                 JOptionPane.ERROR_MESSAGE
-            );
+                );
+            }
         }
-    }
-
     }//GEN-LAST:event_btnEliminarActionPerformed
 
     private void btnRegresarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnRegresarActionPerformed
@@ -690,7 +761,7 @@ limpiarFormulario();
     txtname.setText("");
     txttlfno.setText("");
     txtemail.setText("");
-    lbldireccion.setText("");
+    txtdireccion.setText("");
     cmbestado.setSelectedIndex(0);
     tablaclientes.clearSelection();
 }

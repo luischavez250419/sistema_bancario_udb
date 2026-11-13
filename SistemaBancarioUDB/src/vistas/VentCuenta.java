@@ -412,10 +412,26 @@ public class VentCuenta extends javax.swing.JFrame {
         return;
     }
 
-    // 2. Obtener los datos del formulario
-    String numeroCuenta = txtNumeroCuenta.getText().trim();
-    String dui = txtdui.getText().trim();
-    String saldoTexto = txtsaldo.getText().trim();
+// 2. Obtener los datos del formulario
+String numeroCuenta = txtNumeroCuenta.getText().trim();
+String dui = txtdui.getText().trim();
+String saldoTexto = txtsaldo.getText().trim();
+
+// Obtener el DUI del propietario original desde la tabla
+String duiOriginal = tblcuentas.getValueAt(
+    filaSeleccionada, 2
+).toString();
+
+// Evitar cambiar el propietario de la cuenta
+if (!dui.equals(duiOriginal)) {
+    JOptionPane.showMessageDialog(
+        this,
+        "No se puede cambiar el propietario de una cuenta bancaria.",
+        "Operación restringida",
+        JOptionPane.WARNING_MESSAGE
+    );
+    return;
+}
 
     if (dui.isEmpty() || saldoTexto.isEmpty()) {
         JOptionPane.showMessageDialog(
@@ -437,6 +453,55 @@ public class VentCuenta extends javax.swing.JFrame {
             );
             return;
         }
+        
+        // Verificar que el cliente no esté bloqueado
+if ("Bloqueado".equals(cliente.getEstado())) {
+    JOptionPane.showMessageDialog(
+        this,
+        "No se puede modificar la cuenta porque el cliente está bloqueado.",
+        "Operación restringida",
+        JOptionPane.WARNING_MESSAGE
+    );
+    return;
+}
+
+// Verificar el estado actual de la cuenta
+String estadoActual = tblcuentas.getValueAt(
+    filaSeleccionada, 6
+).toString();
+
+if (!"Activa".equals(estadoActual)) {
+
+    String nuevoEstado = cmbestadocuentas.getSelectedItem().toString();
+
+    if (estadoActual.equals(nuevoEstado)) {
+        JOptionPane.showMessageDialog(
+            this,
+            "Las cuentas inactivas o bloqueadas solo permiten cambiar su estado."
+        );
+        return;
+    }
+
+    // No permitir modificar saldo ni tipo de cuenta
+    BigDecimal saldoActual = new BigDecimal(
+        tblcuentas.getValueAt(filaSeleccionada, 5).toString()
+    );
+
+    BigDecimal saldoNuevo = new BigDecimal(saldoTexto);
+
+    if (saldoNuevo.compareTo(saldoActual) != 0
+        || !cmbtipocuenta.getSelectedItem().toString().equals(
+            tblcuentas.getValueAt(filaSeleccionada, 4).toString())) {
+
+        JOptionPane.showMessageDialog(
+            this,
+            "Las cuentas inactivas o bloqueadas solo permiten cambiar su estado.",
+            "Operación restringida",
+            JOptionPane.WARNING_MESSAGE
+        );
+        return;
+    }
+}
 
         // 4. Validar el saldo
         BigDecimal saldo = new BigDecimal(saldoTexto);
