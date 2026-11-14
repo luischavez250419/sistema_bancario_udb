@@ -1,0 +1,22 @@
+2026-11-14 12:05:52 INFO  [main] DepositosRetirosServicio - Solicitud de depósito recibida.
+2026-11-14 12:05:52 INFO  [main] DepositosRetirosServicio - Validaciones de depósito superadas correctamente para la cuenta 7123681428. Monto: 50.00. Saldo calculado: 250.00
+2026-11-14 12:05:52 INFO  [main] DepositosRetirosServicio - Solicitud de depósito recibida.
+2026-11-14 12:05:52 WARN  [main] DepositosRetirosServicio - Depósito rechazado para la cuenta 7123681428. Motivo: El monto debe ser mayor que cero.
+2026-11-14 12:05:52 INFO  [main] DepositosRetirosServicio - Solicitud de retiro recibida.
+2026-11-14 12:05:52 INFO  [main] DepositosRetirosServicio - Validaciones de retiro superadas para la cuenta 7123681428. Monto: 20.00. Saldo calculado: 180.00
+2026-11-14 12:05:52 INFO  [main] DepositosRetirosServicio - Solicitud de retiro recibida.
+2026-11-14 12:05:52 WARN  [main] DepositosRetirosServicio - Retiro rechazado para la cuenta 7123681428. Motivo: La cuenta no tiene saldo suficiente para realizar el retiro solicitado.
+2026-11-14 12:05:52 INFO  [main] DepositosRetirosServicio - Solicitud de depósito recibida.
+2026-11-14 12:05:52 WARN  [main] DepositosRetirosServicio - Depósito rechazado para la cuenta 9999999999. Motivo: La cuenta bancaria no existe
+2026-11-14 12:05:52 INFO  [main] DepositosRetirosServicio - Solicitud de depósito recibida.
+2026-11-14 12:05:52 WARN  [main] DepositosRetirosServicio - Depósito rechazado para la cuenta 7123681428. Motivo: El monto debe ser mayor que cero.
+2026-11-14 12:05:52 INFO  [main] DepositosRetirosServicio - Solicitud de depósito recibida.
+2026-11-14 12:05:52 WARN  [main] DepositosRetirosServicio - Depósito rechazado para la cuenta 7123681428. Motivo: El monto no puede tener más de dos decimales.
+2026-11-14 12:05:52 INFO  [main] DepositosRetirosServicio - Solicitud de depósito recibida.
+2026-11-14 12:05:52 INFO  [main] DepositosRetirosServicio - Validaciones de depósito superadas correctamente para la cuenta 7123681428. Monto: 10.500. Saldo calculado: 210.500
+2026-11-14 12:05:52 INFO  [main] DepositosRetirosServicio - Solicitud de depósito recibida.
+2026-11-14 12:05:52 WARN  [main] DepositosRetirosServicio - Depósito rechazado para la cuenta 7123681428. Motivo: La operación supera el saldo máximo permitido para la cuenta.
+2026-11-14 12:05:52 INFO  [main] DepositosRetirosServicio - Solicitud de depósito recibida.
+2026-11-14 12:05:52 WARN  [main] DepositosRetirosServicio - Depósito rechazado para la cuenta 7123681428. Motivo: El monto indicado supera el límite permitido para operaciones.
+2026-11-14 12:05:52 INFO  [main] DepositosRetirosServicio - Solicitud de depósito recibida.
+2026-11-14 12:05:52 WARN  [main] DepositosRetirosServicio - Depósito rechazado para la cuenta 7123681428. Motivo: La operación supera el saldo máximo permitido para la cuenta.
