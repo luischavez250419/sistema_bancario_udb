@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration status="WARN">
+
+    <Properties>
+        <Property name="LOG_PATTERN">
+            %d{yyyy-MM-dd HH:mm:ss} %-5level [%t] %c{1} - %msg%n
+        </Property>
+    </Properties>
+
+    <Appenders>
+
+        <!-- Registro en consola-->
+        <Console name="Console" target="SYSTEM_OUT">
+            <PatternLayout pattern="${LOG_PATTERN}"/>
+        </Console>
+
+        <!-- Registro en archivo -->
+        <File name="FileLogger" fileName="logs/sistema_bancario.log" append="true">
+            <PatternLayout pattern="${LOG_PATTERN}"/>
+        </File>
+
+    </Appenders>
+
+    <Loggers>
+
+        <!-- Registro general de la aplicacion -->
+            <Root level="info">
+                <AppenderRef ref="Console"/>
+                <AppenderRef ref="FileLogger"/>
+            </Root>
+
+        </Loggers>
+
+</Configuration> 
