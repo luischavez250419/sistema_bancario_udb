@@ -6,3 +6,17 @@ build
 
 # Ignore Kotlin plugin data
 .kotlin
+
+# Archivos compilados de Java
+*.class
+
+# Directorios generados por NetBeans
+**/build/
+**/dist/
+
+# Configuración privada de NetBeans
+**/nbproject/private/
+
+# Archivos temporales
+*.log
+*.tmp
