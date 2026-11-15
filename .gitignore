@@ -1,0 +1,14 @@
+# Archivos generados
+/SistemaBancarioUDB/build/
+/SistemaBancarioUDB/dist/
+
+# Configuración privada
+/SistemaBancarioUDB/nbproject/private/
+/SistemaBancarioUDB/config_database/database.properties
+
+# Registros
+/SistemaBancarioUDB/logs/*.log
+
+# Temporales
+*.class
+*.log

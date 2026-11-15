@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration status="WARN" monitorInterval="30">
+    <Properties>
+        <Property name="LOG_PATTERN">%d{yyyy-MM-dd HH:mm:ss} %-5level [%t] %c{1.} - %msg%n</Property>
+    </Properties>
+    <Appenders>
+        <Console name="Consola" target="SYSTEM_OUT">
+            <PatternLayout pattern="${LOG_PATTERN}"/>
+        </Console>
+        <RollingFile name="Archivo"
+                     fileName="logs/sistema-bancario.log"
+                     filePattern="logs/sistema-bancario-%d{yyyy-MM-dd}-%i.log.gz">
+            <PatternLayout pattern="${LOG_PATTERN}"/>
+            <Policies>
+                <SizeBasedTriggeringPolicy size="5 MB"/>
+                <TimeBasedTriggeringPolicy interval="1" modulate="true"/>
+            </Policies>
+            <DefaultRolloverStrategy max="10"/>
+        </RollingFile>
+    </Appenders>
+    <Loggers>
+        <!-- Política común: módulos del sistema registran INFO, WARN y ERROR. -->
+        <Root level="info">
+            <AppenderRef ref="Consola"/>
+            <AppenderRef ref="Archivo"/>
+        </Root>
+    </Loggers>
+</Configuration>

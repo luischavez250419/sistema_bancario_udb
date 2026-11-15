@@ -1,0 +1,3 @@
+El archivo sistema-bancario.log se genera automáticamente al ejecutar la aplicación
+con Log4j configurado. Para generar el log de prueba, ejecutar config.PruebaLog4j.
+No se incluye un log simulado: el archivo debe provenir de una ejecución real.
