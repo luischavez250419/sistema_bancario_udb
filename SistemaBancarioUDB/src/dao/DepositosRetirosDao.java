@@ -3,6 +3,8 @@ package dao;
 import conexion.Conexion;
 import sistema.Cliente;
 import sistema.Cuenta_bancaria;
+import excepciones.TransaccionExcepcion;
+import sistema.Movimiento;
 
 import java.math.BigDecimal;
 import java.sql.Connection;
@@ -71,7 +73,7 @@ public class DepositosRetirosDao {
     private CuentaBloqueada obtenerCuentaConBloqueo(
         Connection conn, String numeroCuenta) throws SQLException {
 
-    String sql = "SELECT saldo, estado "
+    String sql = "SELECT id_cuenta, saldo, estado "
                + "FROM cuentas_bancarias "
                + "WHERE numero_cuenta = ? "
                + "FOR UPDATE";
@@ -84,6 +86,7 @@ public class DepositosRetirosDao {
 
             if (rs.next()) {
                 return new CuentaBloqueada(
+                    rs.getInt("id_cuenta"),
                     rs.getBigDecimal("saldo"),
                     rs.getString("estado")
                 );
@@ -122,10 +125,54 @@ public class DepositosRetirosDao {
         }
     }
     
+    // REGISTRAR MOVIMIENTO BANCARIO
+    // ===============================
+    
+    private void registrarMovimiento (
+        Connection conn,
+        String tipoMovimiento,
+        Integer idCuentaOrigen,
+        Integer idCuentaDestino,
+        BigDecimal monto,
+        String descripcion
+    ) throws SQLException {
+        
+        String sql = "INSERT INTO movimientos "
+                    + "(tipo_movimiento, id_cuenta_origen, "
+                    + "id_cuenta_destino, monto, descripcion) "
+                    + "VALUES (?, ?, ?, ?, ?)";
+        
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            
+            ps.setString(1, tipoMovimiento);
+            
+            if (idCuentaOrigen == null) {
+                ps.setNull(2, java.sql.Types.INTEGER);
+            } else {
+                ps.setInt(2, idCuentaOrigen);
+            }
+            
+            if (idCuentaDestino == null) {
+                ps.setNull(3, java.sql.Types.INTEGER);
+            } else {
+                ps.setInt(3, idCuentaDestino);
+            }
+            
+            ps.setBigDecimal(4, monto);
+            ps.setString(5, descripcion);
+            
+            if (ps.executeUpdate() != 1) {
+                throw new SQLException("No fue posible registrar el movimiento bancario.");
+            }
+        }
+    }
+    
+    
+    
         // REVERTIR TRANSACCION EN CASO DE ERRORES
     //=============================================
 
-    private void revertirTransaccion(Connection conn, SQLException error) {
+    private void revertirTransaccion(Connection conn, Throwable error) {
 
         try {
             conn.rollback();
@@ -154,41 +201,124 @@ public class DepositosRetirosDao {
     //====================
     
     public void realizarDeposito(String numeroCuenta, BigDecimal monto)
-            throws SQLException {
+            throws SQLException, TransaccionExcepcion {
         
-        // Pendiente de implementar:
-    // 1. Iniciar transacción JDBC.
-    // 2. Bloquear y consultar la cuenta.
-    // 3. Actualizar saldo.
-    // 4. Registrar movimiento.
-    // 5. Confirmar con commit().
-    // 6. Revertir con rollback() si ocurre un error.
-    }
+        try (Connection conn = Conexion.obtenerConexion()) {
+            iniciarTransaccion(conn);
+            
+            try {
+                
+                //1. Bloquear y consultar la cuenta
+                CuentaBloqueada cuenta = obtenerCuentaConBloqueo(conn, numeroCuenta);
+                
+                if (cuenta == null) {
+                    throw new TransaccionExcepcion("La cuenta bancaria no existe.");
+                }
+                
+                //2. Verificar que la cuenta este activa
+                if (!"Activa".equals(cuenta.getEstado())) {
+                    throw new TransaccionExcepcion("No se pueden realizar depósitos en una cuenta que no esta activa.");
+                }
+                
+                //3. Validar el monto de la transacción
+                if (monto == null || monto.compareTo(BigDecimal.ZERO) <= 0) {
+                    throw new TransaccionExcepcion("El monto del depósito debe ser mayor que cero.");
+                }
+                
+                //4. Calcular el nuevo saldo
+                BigDecimal nuevoSaldo = cuenta.getSaldo().add(monto);
+                BigDecimal saldoMaximo = new BigDecimal("9999999999.99");
+                
+                if (nuevoSaldo.compareTo(saldoMaximo) > 0) {
+                    throw new TransaccionExcepcion("El depósito supera el saldo máximo permitido para una cuenta bancaria.");
+                }
+                
+                //5. Actualizar el saldo
+                actualizarSaldo(conn, numeroCuenta, nuevoSaldo);
+                
+                //6. Registrar el movimiento
+                registrarMovimiento(conn, "Deposito", null, cuenta.getIdCuenta(), monto, "Depósito bancario");
+                
+                //7. Confirmar la transacción
+                confirmarTransaccion(conn);
+                
+            } catch (SQLException | TransaccionExcepcion | RuntimeException e) {
+                
+                revertirTransaccion(conn, e);
+                throw e;
+                }
+            }
+        }
     
     //REALIZAR RETIRO
     //======================
     
     public void realizarRetiro(String numeroCuenta, BigDecimal monto)
-            throws SQLException{
-        
-        // Pendiente de implementar:
-    // 1. Iniciar transacción JDBC.
-    // 2. Bloquear y consultar la cuenta.
-    // 3. Verificar saldo suficiente.
-    // 4. Actualizar saldo.
-    // 5. Registrar movimiento.
-    // 6. Confirmar con commit().
-    // 7. Revertir con rollback() si ocurre un error.
+            throws SQLException, TransaccionExcepcion {
+       
+        try (Connection conn = Conexion.obtenerConexion()) {
+            
+            iniciarTransaccion(conn);
+            
+            try {
+                
+                //1. Bloquear y consultar la cuenta
+                CuentaBloqueada cuenta = obtenerCuentaConBloqueo(conn, numeroCuenta);
+                
+                if (cuenta == null) {
+                    throw new TransaccionExcepcion("La cuenta bancaria no existe.");
+                }
+                
+                //2. Verificar que la cuenta está activa
+                if (!"Activa".equals(cuenta.getEstado())) {
+                    throw new TransaccionExcepcion("No se pueden realizar retiros en una cuenta que no está activa.");
+                }
+                
+                //3. Validar el monto
+                if (monto == null || monto.compareTo(BigDecimal.ZERO) <= 0) {
+                    throw new TransaccionExcepcion("El monto del retiro debe ser mayor que cero.");
+                }
+                
+                //4. Verificar que existan fondos suficientes para el retiro
+                if (cuenta.getSaldo().compareTo(monto) < 0) {
+                    throw new TransaccionExcepcion("La cuenta no tiene fondos suficientes para realizar el retiro.");
+                }
+                
+                //5. Calcular el nuevo saldo
+                BigDecimal nuevoSaldo = cuenta.getSaldo().subtract(monto);
+                
+                //6. Actualizar el saldo
+                actualizarSaldo(conn, numeroCuenta, nuevoSaldo);
+                
+                //7. Registrar el movimiento
+                registrarMovimiento(conn, "Retiro", cuenta.getIdCuenta(), null, monto, "Retiro bancario");
+            
+                 //8. Confirmar la transacción
+                 confirmarTransaccion(conn);
+                 
+            } catch (SQLException | TransaccionExcepcion | RuntimeException e) {
+                
+                revertirTransaccion(conn, e);
+                throw e;
+            }
+    }
+    
     }
     
     private static class CuentaBloqueada {
 
+    private final int idCuenta;
     private final BigDecimal saldo;
     private final String estado;
 
-    public CuentaBloqueada(BigDecimal saldo, String estado) {
+    public CuentaBloqueada(int idCuenta, BigDecimal saldo, String estado) {
+        this.idCuenta = idCuenta;
         this.saldo = saldo;
         this.estado = estado;
+    }
+    
+    public int getIdCuenta() {
+        return idCuenta;
     }
 
     public BigDecimal getSaldo() {
@@ -199,4 +329,5 @@ public class DepositosRetirosDao {
         return estado;
     }
 }
+
 }

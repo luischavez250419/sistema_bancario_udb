@@ -109,12 +109,14 @@ public class DepositosRetirosServicio {
         //3.5. Validar el nuevo saldo
         validarSaldo(nuevoSaldo);
         
-        logger.info("Validaciones de depósito superadas correctamente para la cuenta {}. "
-        + "Monto: {}. Saldo calculado: {}", numeroCuenta, monto, nuevoSaldo
+        dao.realizarDeposito(numeroCuenta.trim(), monto);
+        
+        logger.info("Depósito realizado correctamente para la cuenta {}. "
+        + "Monto depositado: {}. Nuevo saldo disponible: {}", numeroCuenta, monto, nuevoSaldo
         );
         
         // 4. La operacion SQL se hace en el DAO correspondiente
-        // Pendiente: actualizar saldo y registrar movimiento
+    
     } catch (TransaccionExcepcion e){
         
         // Rechazo por reglas de negocio
@@ -161,12 +163,14 @@ public class DepositosRetirosServicio {
         // 4. Calcular el nuevo saldo
         BigDecimal nuevoSaldo = cuenta.getSaldo().subtract(monto);
         
-        logger.info(
-        "Validaciones de retiro superadas para la cuenta {}. "
-        + "Monto: {}. Saldo calculado: {}", numeroCuenta, monto, nuevoSaldo);
+        dao.realizarRetiro(numeroCuenta.trim(), monto);
         
-        // 5. La operacion SQL se hace en el DAO correspondiente
-        // Pendiente actualizar saldo y registrar movimiento
+        logger.info(
+        "Retiro realizado correctamente para la cuenta {}. "
+        + "Monto retirado: {}. Nuevo saldo disponible: {}", numeroCuenta, monto, nuevoSaldo);
+        
+        // 5. La operacion SQL se hace en el DAO correspondiente.
+        
     } catch (TransaccionExcepcion e) {
         
         // Rechazo por reglas de negocio
