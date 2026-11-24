@@ -1,5 +1,7 @@
 package vistas;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import dao.CuentasDao;
 import sistema.Cliente;
 import sistema.Cuenta_bancaria;
@@ -11,7 +13,8 @@ import javax.swing.table.DefaultTableModel;
 
 public class VentCuenta extends javax.swing.JFrame {
     
-    private static final java.util.logging.Logger logger = java.util.logging.Logger.getLogger(VentCuenta.class.getName());
+private static final Logger logger =
+        LogManager.getLogger(VentCuenta.class);    
     
     private final CuentasDao cuentasDao = new CuentasDao();
 
@@ -785,7 +788,7 @@ private void limpiarCampos() {
                 }
             }
         } catch (ReflectiveOperationException | javax.swing.UnsupportedLookAndFeelException ex) {
-            logger.log(java.util.logging.Level.SEVERE, null, ex);
+            logger.error("Error al configurar el aspecto visual de la ventana", ex);
         }
         //</editor-fold>
 

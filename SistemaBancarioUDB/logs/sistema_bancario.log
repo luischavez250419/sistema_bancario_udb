@@ -1,3 +1,8 @@
-2026-11-16 22:10:46 INFO  [main] PruebaLog4j - Prueba de registro INFO: sistema bancario iniciado.
-2026-11-16 22:10:46 WARN  [main] PruebaLog4j - Prueba de registro WARN: operación de prueba.
-2026-11-16 22:10:46 ERROR [main] PruebaLog4j - Prueba de registro ERROR: error simulado.
+2026-11-20 11:03:57 INFO  [AWT-EventQueue-0] ReportesServicio - Reporte generado correctamente: historial de transacciones
+2026-11-20 11:04:38 INFO  [AWT-EventQueue-0] DepositosRetirosServicio - Solicitud de retiro recibida.
+2026-11-20 11:04:38 INFO  [AWT-EventQueue-0] DepositosRetirosServicio - Retiro realizado correctamente para la cuenta 6662430734. Monto retirado: 200. Nuevo saldo disponible: 5800.10
+2026-11-20 11:04:51 INFO  [AWT-EventQueue-0] ReportesServicio - Reporte generado correctamente: historial de transacciones
+2026-11-20 11:17:10 INFO  [AWT-EventQueue-0] DepositosRetirosServicio - Solicitud de retiro recibida.
+2026-11-20 11:17:11 INFO  [AWT-EventQueue-0] DepositosRetirosServicio - Retiro realizado correctamente para la cuenta 6662430734. Monto retirado: 100. Nuevo saldo disponible: 5700.10
+2026-11-20 11:17:19 INFO  [AWT-EventQueue-0] ReportesServicio - Reporte generado correctamente: historial de transacciones
+2026-11-20 11:17:46 INFO  [AWT-EventQueue-0] ReportesServicio - Reporte generado correctamente: cuentas bloqueadas
