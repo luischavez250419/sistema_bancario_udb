@@ -1,0 +1,8 @@
+2026-11-20 11:03:57 INFO  [AWT-EventQueue-0] ReportesServicio - Reporte generado correctamente: historial de transacciones
+2026-11-20 11:04:38 INFO  [AWT-EventQueue-0] DepositosRetirosServicio - Solicitud de retiro recibida.
+2026-11-20 11:04:38 INFO  [AWT-EventQueue-0] DepositosRetirosServicio - Retiro realizado correctamente para la cuenta 6662430734. Monto retirado: 200. Nuevo saldo disponible: 5800.10
+2026-11-20 11:04:51 INFO  [AWT-EventQueue-0] ReportesServicio - Reporte generado correctamente: historial de transacciones
+2026-11-20 11:17:10 INFO  [AWT-EventQueue-0] DepositosRetirosServicio - Solicitud de retiro recibida.
+2026-11-20 11:17:11 INFO  [AWT-EventQueue-0] DepositosRetirosServicio - Retiro realizado correctamente para la cuenta 6662430734. Monto retirado: 100. Nuevo saldo disponible: 5700.10
+2026-11-20 11:17:19 INFO  [AWT-EventQueue-0] ReportesServicio - Reporte generado correctamente: historial de transacciones
+2026-11-20 11:17:46 INFO  [AWT-EventQueue-0] ReportesServicio - Reporte generado correctamente: cuentas bloqueadas

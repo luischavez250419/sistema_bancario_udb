@@ -1,5 +1,7 @@
 package vistas;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import dao.ClientesDao;
 import sistema.Cliente;
 import java.sql.SQLException;
@@ -24,7 +26,8 @@ private boolean validarCorreo(String correo) {
     );
 }
     
-    private static final java.util.logging.Logger logger = java.util.logging.Logger.getLogger(VentCliente.class.getName());
+     private static final Logger logger =
+        LogManager.getLogger(VentCliente.class);
 
     private final ClientesDao clientesDao = new ClientesDao();
     
@@ -719,7 +722,7 @@ if (!validarCorreo(correo)) {
                 }
             }
         } catch (ReflectiveOperationException | javax.swing.UnsupportedLookAndFeelException ex) {
-            logger.log(java.util.logging.Level.SEVERE, null, ex);
+            logger.error("Error inesperado en la ventana", ex);
         }
         //</editor-fold>
 

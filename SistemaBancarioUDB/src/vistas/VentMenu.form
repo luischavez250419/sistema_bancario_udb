@@ -131,6 +131,9 @@
         </Property>
         <Property name="text" type="java.lang.String" value="Dep&#xf3;sitos y retiros"/>
       </Properties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btnDepositosActionPerformed"/>
+      </Events>
     </Component>
     <Component class="javax.swing.JButton" name="btnTransferencias">
       <Properties>
@@ -139,6 +142,9 @@
         </Property>
         <Property name="text" type="java.lang.String" value="Transferencias"/>
       </Properties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btnTransferenciasActionPerformed"/>
+      </Events>
     </Component>
     <Component class="javax.swing.JButton" name="btnReportes">
       <Properties>
@@ -147,6 +153,9 @@
         </Property>
         <Property name="text" type="java.lang.String" value="Reportes y Consultas"/>
       </Properties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btnReportesActionPerformed"/>
+      </Events>
     </Component>
     <Component class="javax.swing.JButton" name="btnSalir">
       <Properties>
