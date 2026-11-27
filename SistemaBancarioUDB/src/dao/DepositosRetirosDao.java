@@ -9,6 +9,7 @@ import sistema.Movimiento;
 import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.Statement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
@@ -128,43 +129,115 @@ public class DepositosRetirosDao {
     // REGISTRAR MOVIMIENTO BANCARIO
     // ===============================
     
-    private void registrarMovimiento (
+    
+
+    private Movimiento registrarMovimiento(
         Connection conn,
         String tipoMovimiento,
         Integer idCuentaOrigen,
         Integer idCuentaDestino,
         BigDecimal monto,
         String descripcion
-    ) throws SQLException {
-        
+        ) throws SQLException {
+
         String sql = "INSERT INTO movimientos "
-                    + "(tipo_movimiento, id_cuenta_origen, "
-                    + "id_cuenta_destino, monto, descripcion) "
-                    + "VALUES (?, ?, ?, ?, ?)";
-        
-        try (PreparedStatement ps = conn.prepareStatement(sql)) {
-            
-            ps.setString(1, tipoMovimiento);
-            
-            if (idCuentaOrigen == null) {
-                ps.setNull(2, java.sql.Types.INTEGER);
-            } else {
-                ps.setInt(2, idCuentaOrigen);
+            + "(tipo_movimiento, id_cuenta_origen, "
+            + "id_cuenta_destino, monto, descripcion) "
+            + "VALUES (?, ?, ?, ?, ?)";
+
+        try (PreparedStatement ps = conn.prepareStatement(
+            sql, Statement.RETURN_GENERATED_KEYS)) {
+
+        ps.setString(1, tipoMovimiento);
+
+        if (idCuentaOrigen == null) {
+            ps.setNull(2, java.sql.Types.INTEGER);
+        } else {
+            ps.setInt(2, idCuentaOrigen);
+        }
+
+        if (idCuentaDestino == null) {
+            ps.setNull(3, java.sql.Types.INTEGER);
+        } else {
+            ps.setInt(3, idCuentaDestino);
+        }
+
+        ps.setBigDecimal(4, monto);
+        ps.setString(5, descripcion);
+
+        if (ps.executeUpdate() != 1) {
+            throw new SQLException(
+                    "No fue posible registrar el movimiento bancario."
+            );
+        }
+
+        // Recuperar el ID generado por MySQL
+        try (ResultSet rs = ps.getGeneratedKeys()) {
+
+            if (!rs.next()) {
+                throw new SQLException(
+                        "No se pudo recuperar el código del movimiento."
+                );
             }
-            
-            if (idCuentaDestino == null) {
-                ps.setNull(3, java.sql.Types.INTEGER);
-            } else {
-                ps.setInt(3, idCuentaDestino);
-            }
-            
-            ps.setBigDecimal(4, monto);
-            ps.setString(5, descripcion);
-            
-            if (ps.executeUpdate() != 1) {
-                throw new SQLException("No fue posible registrar el movimiento bancario.");
+
+            int idMovimiento = rs.getInt(1);
+
+            // Consultar la fecha generada por MySQL
+            String sqlFecha = "SELECT fecha_hora "
+                    + "FROM movimientos "
+                    + "WHERE id_movimiento = ?";
+
+            try (PreparedStatement psFecha = conn.prepareStatement(sqlFecha)) {
+
+                psFecha.setInt(1, idMovimiento);
+
+                try (ResultSet rsFecha = psFecha.executeQuery()) {
+
+                    if (!rsFecha.next()) {
+                        throw new SQLException(
+                                "No se pudo recuperar la fecha del movimiento."
+                        );
+                    }
+
+                    Timestamp timestamp = rsFecha.getTimestamp("fecha_hora");
+
+                    LocalDateTime fechaHora = timestamp != null
+                            ? timestamp.toLocalDateTime()
+                            : null;
+
+                    Movimiento.TipoMovimiento tipo;
+
+                            switch (tipoMovimiento) {
+                                case "Depósito":
+                                case "Deposito":
+                                    tipo = Movimiento.TipoMovimiento.Deposito;
+                                    break;
+
+                                case "Retiro":
+                                    tipo = Movimiento.TipoMovimiento.Retiro;
+                                    break;
+
+                                default:
+                                    throw new IllegalArgumentException(
+                                        "Tipo de movimiento no válido: " + tipoMovimiento
+                                    );
+                            } 
+
+                    Movimiento movimiento = new Movimiento(
+                            idMovimiento,
+                            tipo,
+                            idCuentaOrigen,
+                            idCuentaDestino,
+                            monto,
+                            fechaHora,
+                            descripcion
+                    );
+                    
+                    return movimiento;
+                }
             }
         }
+    }
     }
     
     
@@ -200,7 +273,7 @@ public class DepositosRetirosDao {
     //REALIZAR DEPOSITO
     //====================
     
-    public void realizarDeposito(String numeroCuenta, BigDecimal monto)
+    public Movimiento realizarDeposito(String numeroCuenta, BigDecimal monto)
             throws SQLException, TransaccionExcepcion {
         
         try (Connection conn = Conexion.obtenerConexion()) {
@@ -237,10 +310,14 @@ public class DepositosRetirosDao {
                 actualizarSaldo(conn, numeroCuenta, nuevoSaldo);
                 
                 //6. Registrar el movimiento
-                registrarMovimiento(conn, "Deposito", null, cuenta.getIdCuenta(), monto, "Depósito bancario");
+                Movimiento movimiento = registrarMovimiento(
+                conn, "Deposito", null, cuenta.getIdCuenta(), monto, "Depósito bancario");
                 
                 //7. Confirmar la transacción
                 confirmarTransaccion(conn);
+                
+                return movimiento;
+               
                 
             } catch (SQLException | TransaccionExcepcion | RuntimeException e) {
                 
@@ -253,7 +330,7 @@ public class DepositosRetirosDao {
     //REALIZAR RETIRO
     //======================
     
-    public void realizarRetiro(String numeroCuenta, BigDecimal monto)
+    public Movimiento realizarRetiro(String numeroCuenta, BigDecimal monto)
             throws SQLException, TransaccionExcepcion {
        
         try (Connection conn = Conexion.obtenerConexion()) {
@@ -291,10 +368,12 @@ public class DepositosRetirosDao {
                 actualizarSaldo(conn, numeroCuenta, nuevoSaldo);
                 
                 //7. Registrar el movimiento
-                registrarMovimiento(conn, "Retiro", cuenta.getIdCuenta(), null, monto, "Retiro bancario");
+                Movimiento movimiento = registrarMovimiento(conn, "Retiro", cuenta.getIdCuenta(), null, monto, "Retiro bancario");
             
                  //8. Confirmar la transacción
                  confirmarTransaccion(conn);
+                 
+                 return movimiento;
                  
             } catch (SQLException | TransaccionExcepcion | RuntimeException e) {
                 

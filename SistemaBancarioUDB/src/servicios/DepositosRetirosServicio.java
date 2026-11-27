@@ -3,6 +3,7 @@ package servicios;
 import dao.DepositosRetirosDao;
 import sistema.Cuenta_bancaria;
 import excepciones.TransaccionExcepcion;
+import sistema.Movimiento;
 
 import java.math.BigDecimal;
 import java.sql.SQLException;
@@ -90,7 +91,7 @@ public class DepositosRetirosServicio {
     // REALIZAR DEPOSITO
     // ====================
     
-    public void realizarDeposito(String numeroCuenta, BigDecimal monto)
+    public Movimiento realizarDeposito(String numeroCuenta, BigDecimal monto)
             throws Exception{
         
         logger.info("Solicitud de depósito recibida.");
@@ -109,7 +110,7 @@ public class DepositosRetirosServicio {
         //3.5. Validar el nuevo saldo
         validarSaldo(nuevoSaldo);
         
-        dao.realizarDeposito(numeroCuenta.trim(), monto);
+        Movimiento movimiento = dao.realizarDeposito(numeroCuenta.trim(), monto);
         
         logger.info("Depósito realizado correctamente para la cuenta {}. "
         + "Monto depositado: {}. Nuevo saldo disponible: {}", numeroCuenta, monto, nuevoSaldo
@@ -117,7 +118,8 @@ public class DepositosRetirosServicio {
         
         // 4. La operacion SQL se hace en el DAO correspondiente
     
-    } catch (TransaccionExcepcion e){
+        return movimiento;
+        } catch (TransaccionExcepcion e){
         
         // Rechazo por reglas de negocio
         logger.warn(
@@ -142,7 +144,7 @@ public class DepositosRetirosServicio {
     // REALIZAR RETIRO
     //====================
     
-    public void realizarRetiro(String numeroCuenta, BigDecimal monto)
+    public Movimiento realizarRetiro(String numeroCuenta, BigDecimal monto)
             throws Exception{
         
         logger.info("Solicitud de retiro recibida.");
@@ -163,13 +165,15 @@ public class DepositosRetirosServicio {
         // 4. Calcular el nuevo saldo
         BigDecimal nuevoSaldo = cuenta.getSaldo().subtract(monto);
         
-        dao.realizarRetiro(numeroCuenta.trim(), monto);
+        Movimiento movimiento = dao.realizarRetiro(numeroCuenta.trim(), monto);
         
         logger.info(
         "Retiro realizado correctamente para la cuenta {}. "
         + "Monto retirado: {}. Nuevo saldo disponible: {}", numeroCuenta, monto, nuevoSaldo);
         
         // 5. La operacion SQL se hace en el DAO correspondiente.
+        
+        return movimiento;
         
     } catch (TransaccionExcepcion e) {
         

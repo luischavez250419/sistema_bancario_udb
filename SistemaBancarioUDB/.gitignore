@@ -1,0 +1,6 @@
+# Configuración local: no subir credenciales
+config_database/database.properties
+# Archivos generados
+/build/
+/dist/
+/logs/*.log

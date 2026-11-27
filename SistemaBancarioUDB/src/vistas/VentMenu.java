@@ -1,8 +1,12 @@
 package vistas;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 public class VentMenu extends javax.swing.JFrame {
     
-    private static final java.util.logging.Logger logger = java.util.logging.Logger.getLogger(VentMenu.class.getName());
+    private static final Logger logger =
+        LogManager.getLogger(VentMenu.class);
 
     /**
      * Creates new form VentMenu
@@ -63,12 +67,27 @@ public class VentMenu extends javax.swing.JFrame {
 
         btnDepositos.setFont(new java.awt.Font("Arial Rounded MT Bold", 0, 12)); // NOI18N
         btnDepositos.setText("Depósitos y retiros");
+        btnDepositos.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnDepositosActionPerformed(evt);
+            }
+        });
 
         btnTransferencias.setFont(new java.awt.Font("Arial Rounded MT Bold", 0, 12)); // NOI18N
         btnTransferencias.setText("Transferencias");
+        btnTransferencias.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnTransferenciasActionPerformed(evt);
+            }
+        });
 
         btnReportes.setFont(new java.awt.Font("Arial Rounded MT Bold", 0, 12)); // NOI18N
         btnReportes.setText("Reportes y Consultas");
+        btnReportes.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnReportesActionPerformed(evt);
+            }
+        });
 
         btnSalir.setFont(new java.awt.Font("Arial Rounded MT Bold", 0, 12)); // NOI18N
         btnSalir.setText("Salir");
@@ -153,6 +172,25 @@ public class VentMenu extends javax.swing.JFrame {
         ventanaCuenta.setVisible(true);
     }//GEN-LAST:event_btnCuentasActionPerformed
 
+    private void btnDepositosActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnDepositosActionPerformed
+        VentDepositoRetiro ventOperacion = new VentDepositoRetiro();
+        ventOperacion.setLocationRelativeTo(null);
+        ventOperacion.setVisible(true);
+        this.dispose();
+    }//GEN-LAST:event_btnDepositosActionPerformed
+
+    private void btnTransferenciasActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnTransferenciasActionPerformed
+        VentTransferencia ventTransf = new VentTransferencia();
+        ventTransf.setLocationRelativeTo(null);
+        ventTransf.setVisible(true);
+    }//GEN-LAST:event_btnTransferenciasActionPerformed
+
+    private void btnReportesActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnReportesActionPerformed
+        VentReportes ventRep = new VentReportes();
+        ventRep.setLocationRelativeTo(null);
+        ventRep.setVisible(true);
+    }//GEN-LAST:event_btnReportesActionPerformed
+
     /**
      * @param args the command line arguments
      */
@@ -170,7 +208,7 @@ public class VentMenu extends javax.swing.JFrame {
                 }
             }
         } catch (ReflectiveOperationException | javax.swing.UnsupportedLookAndFeelException ex) {
-            logger.log(java.util.logging.Level.SEVERE, null, ex);
+            logger.error("Error al configurar el aspecto visual de la ventana", ex);
         }
         //</editor-fold>
 
