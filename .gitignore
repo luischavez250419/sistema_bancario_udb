@@ -20,3 +20,4 @@ build
 # Archivos temporales
 *.log
 *.tmp
+/SistemaBancarioUDB_Web/target/
