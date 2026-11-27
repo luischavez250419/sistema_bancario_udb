@@ -19,6 +19,12 @@
             <p style="color: red;">
                 Debes completar todos los campos.
             </p>
+            
+            <% } else if ("bloqueado".equals(request.getParameter("error"))) { %>
+                <p style="color: red;">
+                    Has superado el límite de intentos.
+                    Intenta nuevamente dentro de 5 minutos.
+                </p>
         <% } %>
 
         <form action="${pageContext.request.contextPath}/login" method="POST">

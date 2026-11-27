@@ -13,6 +13,7 @@
         
         <cookie-config>
             <http-only>true</http-only>
+            <secure>false</secure>
         </cookie-config>
         
         <tracking-mode>COOKIE</tracking-mode>
