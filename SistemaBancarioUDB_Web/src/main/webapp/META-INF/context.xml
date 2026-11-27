@@ -1,2 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Context path="/SistemaBancarioUDB_Web"/>
+<Context path="/SistemaBancarioUDB_Web">
+
+    <CookieProcessor
+        className="org.apache.tomcat.util.http.Rfc6265CookieProcessor"
+        sameSiteCookies="lax" />
+
+</Context>
+
+
